@@ -107,4 +107,5 @@ See [src/heapvlc/HeapVideo.hx](src/heapvlc/HeapVideo.hx) for the full documented
 
 ## License
 
-MIT
+MIT. Note that distributing a working install also means shipping libVLC runtime binaries
+(LGPL/GPL) — see [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
