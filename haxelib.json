@@ -1,6 +1,6 @@
 {
 	"name": "heapvlc",
-	"url": "",
+	"url": "https://github.com/HeroEyad/heapvlc",
 	"license": "MIT",
 	"tags": ["video", "vlc", "libvlc", "heaps", "hashlink"],
 	"description": "A Haxe/Heaps/hashlink library for native video playback using LibVLC",
