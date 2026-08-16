@@ -1,0 +1,12 @@
+{
+	"name": "heapvlc",
+	"url": "",
+	"license": "MIT",
+	"tags": ["video", "vlc", "libvlc", "heaps", "hashlink"],
+	"description": "A Haxe/Heaps/hashlink library for native video playback using LibVLC",
+	"version": "0.1.0",
+	"classPath": "src",
+	"dependencies": {
+		"heaps": ""
+	}
+}
