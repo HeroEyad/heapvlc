@@ -1,7 +1,7 @@
 # heapvlc
 
 <a href="https://lib.haxe.org/p/heapvlc">
-	<img src="assets/logo.png" align="center" />
+	<img src="https://github.com/HeroEyad/heapvlc/blob/main/assets/logo.png?raw=true" align="center" />
 </a>
 
 Video playback for [Heaps](https://heaps.io/) on the HashLink target, via [libVLC](https://wiki.videolan.org/LibVLC).
