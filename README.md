@@ -1,7 +1,7 @@
 # heapvlc
 
 <a href="https://lib.haxe.org/p/heapvlc">
-	<img src="https://heroeyad.github.io/heapsvlc/" align="center" />
+	<img src="https://heroeyad.github.io/heapvlc/api/logo.png" align="center" />
 </a>
 
 Video playback for [Heaps](https://heaps.io/) on the HashLink target, via [libVLC](https://wiki.videolan.org/LibVLC).
@@ -123,8 +123,7 @@ trace(video.getLog());
 
 ## API
 
-See [src/heapvlc/HeapVideo.hx](src/heapvlc/HeapVideo.hx) for the full documented API, and
-[src/heapvlc/LibVLC.hx](src/heapvlc/LibVLC.hx) for the raw native bindings.
+See [API Documentation](https://heroeyad.github.io/heapvlc/api/index.html) for further details!
 
 ## License
 
