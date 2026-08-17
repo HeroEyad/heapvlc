@@ -112,6 +112,41 @@ class LibVLC {
 
 	public static function set_mute(v:VLCHandle, mute:Bool):Void {}
 
+	/** Playback speed multiplier, e.g. `0.5` for half speed, `2.0` for double. **/
+	public static function get_rate(v:VLCHandle):Single {
+		return 1.0;
+	}
+
+	public static function set_rate(v:VLCHandle, rate:Single):Bool {
+		return false;
+	}
+
+	public static function get_audio_track_count(v:VLCHandle):Int {
+		return 0;
+	}
+
+	/** Currently selected audio track id, or `-1` if none/disabled. **/
+	public static function get_audio_track(v:VLCHandle):Int {
+		return -1;
+	}
+
+	public static function set_audio_track(v:VLCHandle, track:Int):Bool {
+		return false;
+	}
+
+	public static function get_subtitle_track_count(v:VLCHandle):Int {
+		return 0;
+	}
+
+	/** Currently selected subtitle track id, or `-1` if none/disabled. **/
+	public static function get_subtitle_track(v:VLCHandle):Int {
+		return -1;
+	}
+
+	public static function set_subtitle_track(v:VLCHandle, track:Int):Bool {
+		return false;
+	}
+
 	public static function close(v:VLCHandle):Void {}
 
 }

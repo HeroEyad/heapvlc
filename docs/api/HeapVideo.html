@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HeapVideo - heapvlc</title>
+<style>
+:root {
+	--bg: #16181d; --fg: #d4d7dd; --muted: #8b93a1;
+	--header: #0d0f12; --header2: #151a22; --accent: #4fa3ff;
+	--sidebar: #1b1e24; --border: #2a2e37;
+	--sig-bg: #1e222a; --kw: #ff7b72; --type: #d2a8ff; --fname: #79c0ff;
+	--dep-bg: #2b2413; --dep-border: #6b5518;
+	font-size: 15px;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif; color: var(--fg); background: var(--bg); }
+code, .sig, .search { font-family: "JetBrains Mono", Consolas, Menlo, monospace; }
+::selection { background: #2b4a75; }
+
+header {
+	background: linear-gradient(180deg, var(--header) 0%, var(--header2) 100%);
+	color: #fff;
+	padding: 14px 24px;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	border-bottom: 1px solid var(--border);
+}
+
+header .logo {
+	height: 36px;
+	width: auto;
+	max-width: 220px;
+	flex-shrink: 0;
+	image-rendering: auto;
+}
+
+header h1 {
+	font-size: 18px;
+	margin: 0;
+	font-weight: 600;
+	letter-spacing: .3px;
+}
+
+header h1 a {
+	color: #fff;
+	text-decoration: none;
+}
+
+header .sub {
+	display: block;
+	color: #6d7686;
+	font-size: 13px;
+	margin-top: 2px;
+}
+
+.layout { display: flex; min-height: calc(100vh - 50px); }
+
+nav {
+	width: 270px; flex-shrink: 0; background: var(--sidebar);
+	border-right: 1px solid var(--border); padding: 16px 0;
+	position: sticky; top: 50px; height: calc(100vh - 50px); overflow-y: auto;
+}
+nav .search {
+	display: block; width: calc(100% - 32px); margin: 0 16px 14px;
+	padding: 7px 10px; border: 1px solid var(--border); border-radius: 5px;
+	font-size: 13px; outline: none; background: #14161b; color: var(--fg);
+}
+nav .search::placeholder { color: #5b6272; }
+nav .search:focus { border-color: var(--accent); }
+nav .pkg { padding: 4px 16px; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .6px; }
+nav ul { list-style: none; margin: 0 0 12px; padding: 0; }
+nav li a {
+	display: block; padding: 5px 16px 5px 28px; color: var(--fg);
+	text-decoration: none; font-size: 14px; border-left: 3px solid transparent;
+}
+nav li a:hover { background: #23272f; }
+nav li a.active { border-left-color: var(--accent); background: #23272f; font-weight: 600; }
+nav li .k { color: var(--muted); font-size: 11px; margin-right: 6px; }
+nav .mem { display: none; margin: 0; }
+nav li.expanded > .mem { display: block; }
+nav .mem > li { display: none; }
+nav .mem > li.mhit { display: block; }
+nav .mem > li > a {
+	padding: 3px 16px 3px 44px; font-size: 12.5px; color: var(--muted);
+	font-family: Consolas, Menlo, monospace;
+}
+nav .mem > li > a:hover { color: var(--fg); }
+
+main { flex: 1; padding: 28px 40px 80px; max-width: 1000px; }
+main h1.classname { font-size: 26px; margin: 0 0 2px; font-weight: 600; color: #fff; }
+main .pkgline { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+main .pkgline code { color: #a5b4c8; }
+main .classdoc { margin-bottom: 26px; line-height: 1.6; }
+main h2.section {
+	font-size: 13px; text-transform: uppercase; letter-spacing: .8px;
+	color: var(--muted); border-bottom: 1px solid var(--border);
+	padding-bottom: 6px; margin: 34px 0 6px;
+}
+
+.field { padding: 16px 0 18px; border-bottom: 1px solid var(--border); }
+.field:target { background: #22262e; margin: 0 -14px; padding-left: 14px; padding-right: 14px; border-radius: 6px; }
+.sig {
+	background: var(--sig-bg); border: 1px solid var(--border); border-radius: 6px;
+	padding: 10px 14px; font-size: 13.5px; overflow-x: auto; white-space: pre-wrap; word-break: break-word;
+}
+.fold { margin: 0; }
+summary.sig { list-style: none; cursor: pointer; position: relative; padding-left: 30px; }
+summary.sig::-webkit-details-marker { display: none; }
+summary.sig::before {
+	content: ""; position: absolute; left: 13px; top: 16px;
+	width: 0; height: 0;
+	border-left: 6px solid var(--muted); border-top: 5px solid transparent; border-bottom: 5px solid transparent;
+	transition: transform .12s ease;
+}
+.fold[open] summary.sig::before { transform: rotate(90deg); border-left-color: var(--accent); }
+summary.sig:hover { border-color: #3a4150; }
+summary.sig:hover::before { border-left-color: var(--fg); }
+.fold[open] summary.sig { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-color: transparent; }
+.fold .srccode { border-top-left-radius: 0; border-top-right-radius: 0; margin-top: 0; }
+.kw { color: var(--kw); } .type { color: var(--type); text-decoration: none; }
+a.type:hover { text-decoration: underline; }
+.fname { color: var(--fname); font-weight: 600; } .arg { color: #e6edf3; }
+.opt, .def { color: var(--muted); }
+
+.fdoc { margin: 10px 2px 0; line-height: 1.55; }
+.fdoc p { margin: 0 0 8px; }
+table.params { border-collapse: collapse; margin: 10px 0 0; font-size: 13.5px; width: 100%; }
+table.params td { border: 1px solid var(--border); padding: 6px 10px; vertical-align: top; }
+table.params td.pn { font-family: Consolas, Menlo, monospace; color: var(--fname); white-space: nowrap; width: 1%; }
+table.params td.pt { font-family: Consolas, Menlo, monospace; color: var(--type); white-space: nowrap; width: 1%; }
+.returns { margin-top: 8px; font-size: 13.5px; }
+.returns b { color: var(--muted); font-weight: 600; }
+
+.srccode {
+	margin: 0; background: #14171c; border: 1px solid var(--border); border-radius: 6px;
+	padding: 12px 14px; font-size: 12.5px; line-height: 1.5; overflow-x: auto;
+	tab-size: 4; color: #cdd3dc;
+	font-family: "JetBrains Mono", Consolas, Menlo, monospace;
+}
+.srccode .c { color: #6d7686; font-style: italic; }
+.srccode .s { color: #a5d6a7; }
+.srccode .num { color: #f0b26b; }
+.srccode .kw { color: var(--kw); }
+.srccode .type { color: var(--type); }
+
+.badge {
+	display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px;
+	vertical-align: middle; margin-left: 8px; font-weight: 600;
+}
+.badge.dep { background: var(--dep-bg); border: 1px solid var(--dep-border); color: #d9b44a; }
+.depnote {
+	background: var(--dep-bg); border: 1px solid var(--dep-border);
+	border-radius: 6px; padding: 8px 12px; margin: 8px 0 0; font-size: 13.5px; color: #d9c17a;
+}
+
+.toc { columns: 2; column-gap: 40px; margin: 8px 0 0; padding: 0; list-style: none; font-size: 13.5px; }
+.toc li { margin: 3px 0; break-inside: avoid; }
+.toc a { color: var(--fname); text-decoration: none; font-family: Consolas, Menlo, monospace; }
+.toc a:hover { text-decoration: underline; }
+.toc .dep-toc { opacity: .55; }
+
+.index-list { list-style: none; padding: 0; }
+.index-list li { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.index-list a { font-size: 17px; color: var(--fname); text-decoration: none; font-weight: 600; }
+.index-list a:hover { text-decoration: underline; }
+.index-list .d { color: var(--muted); font-size: 13.5px; margin-top: 3px; line-height: 1.5; }
+.hidden { display: none; }
+footer { color: var(--muted); font-size: 12px; margin-top: 60px; }
+
+nav::-webkit-scrollbar, body::-webkit-scrollbar { width: 10px; }
+nav::-webkit-scrollbar-thumb, body::-webkit-scrollbar-thumb { background: #2e333d; border-radius: 5px; }
+nav::-webkit-scrollbar-track, body::-webkit-scrollbar-track { background: transparent; }
+
+@media (max-width: 760px) {
+	.layout { flex-direction: column; }
+	nav { width: 100%; height: auto; position: static; }
+	main { padding: 20px 18px 60px; }
+	.toc { columns: 1; }
+}
+</style>
+</head>
+<body>
+<header>
+<img class="logo" src="logo.png" alt="heapvlc logo">
+<div>
+<h1><a href="index.html">heapvlc</a></h1>
+<span class="sub">API documentation</span>
+</div>
+</header>
+<div class="layout">
+<nav>
+<input class="search" type="text" placeholder="Filter classes...">
+<div class="pkg">heapvlc</div><ul><li data-name="HeapVideo"><a href="HeapVideo.html" class="active"><span class="k">C</span>HeapVideo</a><ul class="mem"><li data-name="bitmap"><a href="HeapVideo.html#bitmap">bitmap</a></li><li data-name="loop"><a href="HeapVideo.html#loop">loop</a></li><li data-name="onEndReached"><a href="HeapVideo.html#onEndReached">onEndReached</a></li><li data-name="onFormatSetup"><a href="HeapVideo.html#onFormatSetup">onFormatSetup</a></li><li data-name="onPlaying"><a href="HeapVideo.html#onPlaying">onPlaying</a></li><li data-name="onError"><a href="HeapVideo.html#onError">onError</a></li><li data-name="fitWidth"><a href="HeapVideo.html#fitWidth">fitWidth</a></li><li data-name="fitHeight"><a href="HeapVideo.html#fitHeight">fitHeight</a></li><li data-name="playing"><a href="HeapVideo.html#playing">playing</a></li><li data-name="duration"><a href="HeapVideo.html#duration">duration</a></li><li data-name="position"><a href="HeapVideo.html#position">position</a></li><li data-name="time"><a href="HeapVideo.html#time">time</a></li><li data-name="volume"><a href="HeapVideo.html#volume">volume</a></li><li data-name="muted"><a href="HeapVideo.html#muted">muted</a></li><li data-name="rate"><a href="HeapVideo.html#rate">rate</a></li><li data-name="audioTrackCount"><a href="HeapVideo.html#audioTrackCount">audioTrackCount</a></li><li data-name="audioTrack"><a href="HeapVideo.html#audioTrack">audioTrack</a></li><li data-name="subtitleTrackCount"><a href="HeapVideo.html#subtitleTrackCount">subtitleTrackCount</a></li><li data-name="subtitleTrack"><a href="HeapVideo.html#subtitleTrack">subtitleTrack</a></li><li data-name="new"><a href="HeapVideo.html#new">new</a></li><li data-name="load"><a href="HeapVideo.html#load">load</a></li><li data-name="play"><a href="HeapVideo.html#play">play</a></li><li data-name="getLog"><a href="HeapVideo.html#getLog">getLog</a></li><li data-name="pause"><a href="HeapVideo.html#pause">pause</a></li><li data-name="resume"><a href="HeapVideo.html#resume">resume</a></li><li data-name="stop"><a href="HeapVideo.html#stop">stop</a></li><li data-name="destroy"><a href="HeapVideo.html#destroy">destroy</a></li></ul></li><li data-name="LibVLC"><a href="LibVLC.html"><span class="k">C</span>LibVLC</a><ul class="mem"><li data-name="global_init"><a href="LibVLC.html#global_init">global_init</a></li><li data-name="global_shutdown"><a href="LibVLC.html#global_shutdown">global_shutdown</a></li><li data-name="get_error"><a href="LibVLC.html#get_error">get_error</a></li><li data-name="get_log"><a href="LibVLC.html#get_log">get_log</a></li><li data-name="open"><a href="LibVLC.html#open">open</a></li><li data-name="play"><a href="LibVLC.html#play">play</a></li><li data-name="set_pause"><a href="LibVLC.html#set_pause">set_pause</a></li><li data-name="stop"><a href="LibVLC.html#stop">stop</a></li><li data-name="is_playing"><a href="LibVLC.html#is_playing">is_playing</a></li><li data-name="has_ended"><a href="LibVLC.html#has_ended">has_ended</a></li><li data-name="has_error"><a href="LibVLC.html#has_error">has_error</a></li><li data-name="take_playing"><a href="LibVLC.html#take_playing">take_playing</a></li><li data-name="get_size"><a href="LibVLC.html#get_size">get_size</a></li><li data-name="has_frame"><a href="LibVLC.html#has_frame">has_frame</a></li><li data-name="get_frame"><a href="LibVLC.html#get_frame">get_frame</a></li><li data-name="get_length"><a href="LibVLC.html#get_length">get_length</a></li><li data-name="get_time"><a href="LibVLC.html#get_time">get_time</a></li><li data-name="set_time"><a href="LibVLC.html#set_time">set_time</a></li><li data-name="get_position"><a href="LibVLC.html#get_position">get_position</a></li><li data-name="set_position"><a href="LibVLC.html#set_position">set_position</a></li><li data-name="get_volume"><a href="LibVLC.html#get_volume">get_volume</a></li><li data-name="set_volume"><a href="LibVLC.html#set_volume">set_volume</a></li><li data-name="set_mute"><a href="LibVLC.html#set_mute">set_mute</a></li><li data-name="get_rate"><a href="LibVLC.html#get_rate">get_rate</a></li><li data-name="set_rate"><a href="LibVLC.html#set_rate">set_rate</a></li><li data-name="get_audio_track_count"><a href="LibVLC.html#get_audio_track_count">get_audio_track_count</a></li><li data-name="get_audio_track"><a href="LibVLC.html#get_audio_track">get_audio_track</a></li><li data-name="set_audio_track"><a href="LibVLC.html#set_audio_track">set_audio_track</a></li><li data-name="get_subtitle_track_count"><a href="LibVLC.html#get_subtitle_track_count">get_subtitle_track_count</a></li><li data-name="get_subtitle_track"><a href="LibVLC.html#get_subtitle_track">get_subtitle_track</a></li><li data-name="set_subtitle_track"><a href="LibVLC.html#set_subtitle_track">set_subtitle_track</a></li><li data-name="close"><a href="LibVLC.html#close">close</a></li></ul></li></ul><div class="pkg">heapvlc.macro</div><ul><li data-name="Checks"><a href="Checks.html"><span class="k">C</span>Checks</a><ul class="mem"><li data-name="run"><a href="Checks.html#run">run</a></li></ul></li></ul>
+</nav>
+<main>
+<h1 class="classname">HeapVideo</h1><div class="pkgline">class - package <code>heapvlc</code></div><div class="classdoc"><p>Plays video through libVLC, decoding frames into a dynamic heaps texture shown via `bitmap`.<br>	Backed by native/vlc.c (built into `vlc.hdll` by native/build.ps1), which has to exist before use.</p><p>	libVLC does its own decoding, so `play()` takes anything it supports (mp4, mkv, webm, etc.)<br>	and also supports URL streaming.</p><p>	Standalone `h2d.Object` - doesn't depend on any particular host engine's update convention,<br>	just Heaps' own per-frame `sync()`, so `new heapvlc.HeapVideo(parent)` works in any Heaps scene.</p></div><h2 class="section">Members</h2><ul class="toc"><li><a href="#bitmap">bitmap</a></li><li><a href="#loop">loop</a></li><li><a href="#onEndReached">onEndReached</a></li><li><a href="#onFormatSetup">onFormatSetup</a></li><li><a href="#onPlaying">onPlaying</a></li><li><a href="#onError">onError</a></li><li><a href="#fitWidth">fitWidth</a></li><li><a href="#fitHeight">fitHeight</a></li><li><a href="#playing">playing</a></li><li><a href="#duration">duration</a></li><li><a href="#position">position</a></li><li><a href="#time">time</a></li><li><a href="#volume">volume</a></li><li><a href="#muted">muted</a></li><li><a href="#rate">rate</a></li><li><a href="#audioTrackCount">audioTrackCount</a></li><li><a href="#audioTrack">audioTrack</a></li><li><a href="#subtitleTrackCount">subtitleTrackCount</a></li><li><a href="#subtitleTrack">subtitleTrack</a></li><li><a href="#new">new</a></li><li><a href="#load">load</a></li><li><a href="#play">play</a></li><li><a href="#getLog">getLog</a></li><li><a href="#pause">pause</a></li><li><a href="#resume">resume</a></li><li><a href="#stop">stop</a></li><li><a href="#destroy">destroy</a></li></ul><h2 class="section">Variables</h2><div class="field" id="bitmap"><div class="sig"><span class="kw">var</span> <span class="fname">bitmap</span>(default, null):h2d.<span class="type">Bitmap</span></div><div class="fdoc"><p>The `h2d.Bitmap` child that displays decoded video frames. Untextured until the first frame arrives.</p></div></div><div class="field" id="loop"><div class="sig"><span class="kw">var</span> <span class="fname">loop</span>:<span class="type">Bool</span></div><div class="fdoc"><p>When true, playback restarts from the beginning instead of stopping at `onEndReached`.</p></div></div><div class="field" id="onEndReached"><div class="sig"><span class="kw">var</span> <span class="fname">onEndReached</span>:<span class="type">Void</span>-&gt;<span class="type">Void</span></div><div class="fdoc"><p>Fires when playback reaches the end of the media - after a loop restart, or after `stop()` on a non-looping end.</p></div></div><div class="field" id="onFormatSetup"><div class="sig"><span class="kw">var</span> <span class="fname">onFormatSetup</span>:(width:<span class="type">Int</span>, height:<span class="type">Int</span>) -&gt; <span class="type">Void</span></div><div class="fdoc"><p>Fires once the decoder reports the video's pixel size and `bitmap`'s texture has been (re)created.</p></div></div><div class="field" id="onPlaying"><div class="sig"><span class="kw">var</span> <span class="fname">onPlaying</span>:<span class="type">Void</span>-&gt;<span class="type">Void</span></div><div class="fdoc"><p>Fires when libVLC's "playing" event is observed; see `LibVLC.take_playing`. Can fire again after a pause/resume.</p></div></div><div class="field" id="onError"><div class="sig"><span class="kw">var</span> <span class="fname">onError</span>:<span class="type">Void</span>-&gt;<span class="type">Void</span></div><div class="fdoc"><p>Fires once when the native player reports a playback error; call `getLog()` for details.</p></div></div><div class="field" id="fitWidth"><div class="sig"><span class="kw">var</span> <span class="fname">fitWidth</span>:<span class="type">Null</span>&lt;<span class="type">Float</span>&gt;</div><div class="fdoc"><p>When set, `bitmap` is scaled down (never up) to fit within this size and centered on<br>		whichever axes are set, once the native dimensions are known. Set before or after play().</p></div></div><div class="field" id="fitHeight"><div class="sig"><span class="kw">var</span> <span class="fname">fitHeight</span>:<span class="type">Null</span>&lt;<span class="type">Float</span>&gt;</div></div><div class="field" id="playing"><div class="sig"><span class="kw">var</span> <span class="fname">playing</span>(get, never):<span class="type">Bool</span></div><div class="fdoc"><p>Whether the native player considers itself currently playing. `false` when nothing is loaded.</p></div></div><div class="field" id="duration"><div class="sig"><span class="kw">var</span> <span class="fname">duration</span>(get, never):<span class="type">Float</span></div><div class="fdoc"><p>Media duration in milliseconds, or `0` when nothing is loaded.</p></div></div><div class="field" id="position"><div class="sig"><span class="kw">var</span> <span class="fname">position</span>(get, set):<span class="type">Float</span></div><div class="fdoc"><p>Playback position, normalized `0..1`. Writable to seek; `0` when nothing is loaded.</p></div></div><div class="field" id="time"><div class="sig"><span class="kw">var</span> <span class="fname">time</span>(get, set):<span class="type">Float</span></div><div class="fdoc"><p>Playback position in milliseconds. Writable to seek; `0` when nothing is loaded.</p></div></div><div class="field" id="volume"><div class="sig"><span class="kw">var</span> <span class="fname">volume</span>(get, set):<span class="type">Int</span></div><div class="fdoc"><p>Volume, `0..100+` (`100` = normal). Defaults to `100` when nothing is loaded.</p></div></div><div class="field" id="muted"><div class="sig"><span class="kw">var</span> <span class="fname">muted</span>(default, set):<span class="type">Bool</span></div><div class="fdoc"><p>Whether audio output is muted.</p></div></div><div class="field" id="rate"><div class="sig"><span class="kw">var</span> <span class="fname">rate</span>(get, set):<span class="type">Float</span></div><div class="fdoc"><p>Playback speed multiplier, e.g. `0.5` for half speed, `2.0` for double. `1.0` when nothing is loaded.</p></div></div><div class="field" id="audioTrackCount"><div class="sig"><span class="kw">var</span> <span class="fname">audioTrackCount</span>(get, never):<span class="type">Int</span></div><div class="fdoc"><p>Number of available audio tracks, or `0` when nothing is loaded.</p></div></div><div class="field" id="audioTrack"><div class="sig"><span class="kw">var</span> <span class="fname">audioTrack</span>(get, set):<span class="type">Int</span></div><div class="fdoc"><p>Selected audio track id (not necessarily 0-based - see `audioTrackCount`), or `-1` for none.</p></div></div><div class="field" id="subtitleTrackCount"><div class="sig"><span class="kw">var</span> <span class="fname">subtitleTrackCount</span>(get, never):<span class="type">Int</span></div><div class="fdoc"><p>Number of available subtitle tracks, or `0` when nothing is loaded.</p></div></div><div class="field" id="subtitleTrack"><div class="sig"><span class="kw">var</span> <span class="fname">subtitleTrack</span>(get, set):<span class="type">Int</span></div><div class="fdoc"><p>Selected subtitle track id (not necessarily 0-based - see `subtitleTrackCount`), or `-1` for none/disabled.</p></div></div><h2 class="section">Functions</h2><div class="field" id="new"><details class="fold"><summary class="sig has-src"><span class="kw">function</span> <span class="fname">new</span>(<span class='opt'>?</span><span class="arg">parent</span>:h2d.<span class="type">Object</span>):<span class="type">Void</span></summary><pre class="srccode"><span class="kw">public</span> <span class="kw">function</span> <span class="kw">new</span>(?parent:h2d.<span class="type">Object</span>) {
+		super(parent);
+		bitmap = <span class="kw">new</span> h2d.<span class="type">Bitmap</span>(<span class="kw">this</span>);
+		ensureInit();
+	}</pre></details><div class="fdoc"><p>Creates the player and its `bitmap`, optionally attaching it under `parent`. Runs one-time<br>		libVLC init if needed.</p></div><table class="params"><tr><td class="pn">?parent</td><td class="pt">h2d.Object</td><td>Optional Heaps object to attach this player under.</td></tr></table></div><div class="field" id="load"><details class="fold"><summary class="sig has-src"><span class="kw">function</span> <span class="fname">load</span>(<span class="arg">path</span>:<span class="type">String</span>, <span class='opt'>?</span><span class="arg">isUrl</span>:<span class="type">Bool</span>):<a class="type" href="HeapVideo.html">HeapVideo</a></summary><pre class="srccode"><span class="kw">public</span> <span class="kw">function</span> load(path:<span class="type">String</span>, ?isUrl:<span class="type">Bool</span>):<span class="type">HeapVideo</span> {
+		stop();
+		<span class="kw">var</span> url = isUrl != <span class="kw">null</span> ? isUrl : urlScheme.match(path);
+		handle = <span class="type">LibVLC</span>.open(toCString(path), url);
+		<span class="kw">if</span> (handle == <span class="kw">null</span>)
+			<span class="kw">throw</span> <span class="s">'HeapVideo: failed to open "$path"'</span> + errorSuffix();
+		<span class="kw">return</span> <span class="kw">this</span>;
+	}</pre></details><div class="fdoc"><p>Stops any current playback and opens `path` (a local file path or a streaming URL) for<br>		this player, without starting playback.</p></div><table class="params"><tr><td class="pn">path</td><td class="pt">String</td><td>A local file path or a streaming URL.</td></tr><tr><td class="pn">?isUrl</td><td class="pt">Bool</td><td>Whether `path` is a URL. Auto-detected from a `scheme://` prefix when omitted.</td></tr></table><div class="returns"><b>Returns:</b> This player, for chaining.</div><div class="returns"><b>Throws:</b> String if libVLC fails to open the source.</div></div><div class="field" id="play"><details class="fold"><summary class="sig has-src"><span class="kw">function</span> <span class="fname">play</span>(<span class='opt'>?</span><span class="arg">path</span>:<span class="type">String</span>, <span class='opt'>?</span><span class="arg">isUrl</span>:<span class="type">Bool</span>):<a class="type" href="HeapVideo.html">HeapVideo</a></summary><pre class="srccode"><span class="kw">public</span> <span class="kw">function</span> play(?path:<span class="type">String</span>, ?isUrl:<span class="type">Bool</span>):<span class="type">HeapVideo</span> {
+		<span class="kw">if</span> (path != <span class="kw">null</span>) load(path, isUrl);
+		<span class="kw">if</span> (handle == <span class="kw">null</span>)
+			<span class="kw">throw</span> <span class="s">"HeapVideo: play() called with nothing loaded - call load() or pass a path"</span>;
+		errorSeen = <span class="kw">false</span>; <span class="c">// vlc_play() resets the native errored flag along with starting playback</span>
+		<span class="kw">if</span> (!<span class="type">LibVLC</span>.play(handle))
+			<span class="kw">throw</span> <span class="s">"HeapVideo: failed to play"</span> + errorSuffix();
+		<span class="kw">return</span> <span class="kw">this</span>;
+	}</pre></details><div class="fdoc"><p>Starts playback. Pass `path` to `load()` it first, or call after a previous `load()`.</p></div><table class="params"><tr><td class="pn">?path</td><td class="pt">String</td><td>Optional media to `load()` before playing.</td></tr><tr><td class="pn">?isUrl</td><td class="pt">Bool</td><td>Forwarded to `load()` when `path` is given.</td></tr></table><div class="returns"><b>Returns:</b> This player, for chaining.</div><div class="returns"><b>Throws:</b> String if nothing is loaded or if libVLC fails to start playback.</div></div><div class="field" id="getLog"><details class="fold"><summary class="sig has-src"><span class="kw">function</span> <span class="fname">getLog</span>():<span class="type">String</span></summary><pre class="srccode"><span class="kw">public</span> <span class="kw">function</span> getLog():<span class="type">String</span> {
+		<span class="kw">var</span> buf = haxe.io.<span class="type">Bytes</span>.alloc(<span class="num">8192</span>);
+		<span class="kw">var</span> len = <span class="type">LibVLC</span>.get_log(buf, buf.length);
+		<span class="kw">return</span> buf.getString(<span class="num">0</span>, len);
+	}</pre></details><div class="fdoc"><p>Recent libVLC diagnostic log (info/warning/error) since this player's last `load()`/<br>		`play()` call - useful when playback silently doesn't progress (wrong URL, unresolved<br>		stream, missing codec, ...) without `open()`/`play()` themselves reporting failure.</p></div><div class="returns"><b>Returns:</b> The diagnostic log text, or `""` if there's nothing logged.</div></div><div class="field" id="pause"><details class="fold"><summary class="sig has-src"><span class="kw">function</span> <span class="fname">pause</span>():<span class="type">Void</span></summary><pre class="srccode"><span class="kw">public</span> <span class="kw">function</span> pause():<span class="type">Void</span> {
+		<span class="kw">if</span> (handle != <span class="kw">null</span>) <span class="type">LibVLC</span>.set_pause(handle, <span class="kw">true</span>);
+	}</pre></details><div class="fdoc"><p>Pauses playback. No-op when nothing is loaded.</p></div></div><div class="field" id="resume"><details class="fold"><summary class="sig has-src"><span class="kw">function</span> <span class="fname">resume</span>():<span class="type">Void</span></summary><pre class="srccode"><span class="kw">public</span> <span class="kw">function</span> resume():<span class="type">Void</span> {
+		<span class="kw">if</span> (handle != <span class="kw">null</span>) <span class="type">LibVLC</span>.set_pause(handle, <span class="kw">false</span>);
+	}</pre></details><div class="fdoc"><p>Resumes playback after `pause()`. No-op when nothing is loaded.</p></div></div><div class="field" id="stop"><details class="fold"><summary class="sig has-src"><span class="kw">function</span> <span class="fname">stop</span>():<span class="type">Void</span></summary><pre class="srccode"><span class="kw">public</span> <span class="kw">function</span> stop():<span class="type">Void</span> {
+		<span class="kw">if</span> (handle != <span class="kw">null</span>) {
+			<span class="type">LibVLC</span>.close(handle);
+			handle = <span class="kw">null</span>;
+		}
+		sizeKnown = <span class="kw">false</span>;
+		frameWidth = <span class="num">0</span>;
+		frameHeight = <span class="num">0</span>;
+		errorSeen = <span class="kw">false</span>;
+	}</pre></details><div class="fdoc"><p>stops playback and frees the native player. safe to call when nothing's playing.</p></div></div><div class="field" id="destroy"><details class="fold"><summary class="sig has-src"><span class="kw">function</span> <span class="fname">destroy</span>():<span class="type">Void</span></summary><pre class="srccode"><span class="c">// destroys the object.</span>
+	<span class="kw">public</span> <span class="kw">function</span> destroy():<span class="type">Void</span> {
+		stop();
+		remove();
+	}</pre></details></div>
+<footer>generated by hxdoc // hxdoc made by HeroEyad</footer>
+</main>
+</div>
+<script>
+function fuzzy(q, s) {
+	q = q.toLowerCase(); s = s.toLowerCase();
+	if (!q) return true;
+	var i = 0;
+	for (var j = 0; j < s.length && i < q.length; j++) if (s[j] === q[i]) i++;
+	return i === q.length;
+}
+document.querySelector(".search").addEventListener("input", function () {
+	var q = this.value.trim();
+	document.querySelectorAll("nav > ul > li, nav ul:not(.mem) > li").forEach(function (li) {
+		if (li.parentElement.classList.contains("mem")) return;
+		var cls = li.getAttribute("data-name") || "";
+		var classHit = fuzzy(q, cls);
+		var memberHit = false;
+		li.querySelectorAll(".mem > li").forEach(function (mli) {
+			var hit = q !== "" && fuzzy(q, mli.getAttribute("data-name") || "");
+			mli.classList.toggle("mhit", hit);
+			if (hit) memberHit = true;
+		});
+		li.classList.toggle("hidden", !(classHit || memberHit) && q !== "");
+		li.classList.toggle("expanded", memberHit && q !== "");
+	});
+});
+</script>
+</body>
+</html>
