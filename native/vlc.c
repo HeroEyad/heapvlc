@@ -373,6 +373,42 @@ HL_PRIM void HL_NAME(vlc_set_mute)( hl_vlc *v, bool mute ) {
 	libvlc_audio_set_mute(v->player, mute ? 1 : 0);
 }
 
+HL_PRIM float HL_NAME(vlc_get_rate)( hl_vlc *v ) {
+	return libvlc_media_player_get_rate(v->player);
+}
+
+HL_PRIM bool HL_NAME(vlc_set_rate)( hl_vlc *v, float rate ) {
+	return libvlc_media_player_set_rate(v->player, rate) == 0;
+}
+
+// audio/subtitle track selection. track ids are libVLC's own (not necessarily 0-based or
+// contiguous - -1 means "none"), so callers enumerate what's valid via *_track_count rather than
+// assuming a range.
+
+HL_PRIM int HL_NAME(vlc_get_audio_track_count)( hl_vlc *v ) {
+	return libvlc_audio_get_track_count(v->player);
+}
+
+HL_PRIM int HL_NAME(vlc_get_audio_track)( hl_vlc *v ) {
+	return libvlc_audio_get_track(v->player);
+}
+
+HL_PRIM bool HL_NAME(vlc_set_audio_track)( hl_vlc *v, int track ) {
+	return libvlc_audio_set_track(v->player, track) == 0;
+}
+
+HL_PRIM int HL_NAME(vlc_get_subtitle_track_count)( hl_vlc *v ) {
+	return libvlc_video_get_spu_count(v->player);
+}
+
+HL_PRIM int HL_NAME(vlc_get_subtitle_track)( hl_vlc *v ) {
+	return libvlc_video_get_spu(v->player);
+}
+
+HL_PRIM bool HL_NAME(vlc_set_subtitle_track)( hl_vlc *v, int track ) {
+	return libvlc_video_set_spu(v->player, track) == 0;
+}
+
 HL_PRIM void HL_NAME(vlc_close)( hl_vlc *v ) {
 	hl_vlc_free(v);
 }
@@ -406,5 +442,16 @@ DEFINE_PRIM(_VOID, vlc_set_position, _VLC _F64);
 DEFINE_PRIM(_I32, vlc_get_volume, _VLC);
 DEFINE_PRIM(_BOOL, vlc_set_volume, _VLC _I32);
 DEFINE_PRIM(_VOID, vlc_set_mute, _VLC _BOOL);
+
+DEFINE_PRIM(_F32, vlc_get_rate, _VLC);
+DEFINE_PRIM(_BOOL, vlc_set_rate, _VLC _F32);
+
+DEFINE_PRIM(_I32, vlc_get_audio_track_count, _VLC);
+DEFINE_PRIM(_I32, vlc_get_audio_track, _VLC);
+DEFINE_PRIM(_BOOL, vlc_set_audio_track, _VLC _I32);
+
+DEFINE_PRIM(_I32, vlc_get_subtitle_track_count, _VLC);
+DEFINE_PRIM(_I32, vlc_get_subtitle_track, _VLC);
+DEFINE_PRIM(_BOOL, vlc_set_subtitle_track, _VLC _I32);
 
 DEFINE_PRIM(_VOID, vlc_close, _VLC);

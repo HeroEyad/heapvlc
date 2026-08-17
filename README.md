@@ -1,7 +1,7 @@
 # heapvlc
 
 <a href="https://lib.haxe.org/p/heapvlc">
-	<img src="https://github.com/HeroEyad/heapvlc/blob/main/assets/logo.png?raw=true" align="center" />
+	<img src="https://heroeyad.github.io/heapsvlc/" align="center" />
 </a>
 
 Video playback for [Heaps](https://heaps.io/) on the HashLink target, via [libVLC](https://wiki.videolan.org/LibVLC).
@@ -85,9 +85,30 @@ video.position = 0.5;   // seek to 50%, normalized 0..1
 video.time = 30000;     // seek to 30s, in milliseconds
 video.volume = 50;
 video.muted = true;
+video.rate = 1.5;       // 1.5x speed; 1.0 is normal
 video.stop();           // stops playback and frees the native player
 video.destroy();        // stop() + removes the object from the scene
 ```
+
+### Audio/subtitle tracks
+
+Track ids come from libVLC itself - not necessarily 0-based or contiguous - so enumerate what's
+valid via the `*TrackCount` properties rather than assuming a range. `-1` means none/disabled.
+
+```haxe
+trace('${video.audioTrackCount} audio track(s), current: ${video.audioTrack}');
+video.subtitleTrack = -1; // disable subtitles
+```
+
+### Errors
+
+```haxe
+video.onError = () -> trace('playback error: ${video.getLog()}');
+```
+
+`onError` fires once per error (e.g. a stream that drops mid-play, or a decoder failure after
+`play()` already succeeded) - these are usually asynchronous failures that `play()`/`load()`
+themselves won't have thrown for, since they succeeded synchronously at the time.
 
 ### Diagnostics
 

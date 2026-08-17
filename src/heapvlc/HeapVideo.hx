@@ -39,6 +39,9 @@ class HeapVideo extends h2d.Object {
 	/** Fires when libVLC's "playing" event is observed; see `LibVLC.take_playing`. Can fire again after a pause/resume. **/
 	public var onPlaying:Void->Void;
 
+	/** Fires once when the native player reports a playback error; call `getLog()` for details. **/
+	public var onError:Void->Void;
+
 	/**
 		When set, `bitmap` is scaled down (never up) to fit within this size and centered on
 		whichever axes are set, once the native dimensions are known. Set before or after play().
@@ -58,6 +61,17 @@ class HeapVideo extends h2d.Object {
 	public var volume(get, set):Int;
 	/** Whether audio output is muted. **/
 	public var muted(default, set):Bool = false;
+	/** Playback speed multiplier, e.g. `0.5` for half speed, `2.0` for double. `1.0` when nothing is loaded. **/
+	public var rate(get, set):Float;
+
+	/** Number of available audio tracks, or `0` when nothing is loaded. **/
+	public var audioTrackCount(get, never):Int;
+	/** Selected audio track id (not necessarily 0-based - see `audioTrackCount`), or `-1` for none. **/
+	public var audioTrack(get, set):Int;
+	/** Number of available subtitle tracks, or `0` when nothing is loaded. **/
+	public var subtitleTrackCount(get, never):Int;
+	/** Selected subtitle track id (not necessarily 0-based - see `subtitleTrackCount`), or `-1` for none/disabled. **/
+	public var subtitleTrack(get, set):Int;
 
 	/** Native libVLC player handle for the currently loaded media, or `null` when nothing is loaded. **/
 	var handle:VLCHandle;
@@ -71,6 +85,8 @@ class HeapVideo extends h2d.Object {
 	var frameHeight:Int = 0;
 	/** Whether `frameWidth`/`frameHeight`/`texture` reflect a size reported by the decoder yet. **/
 	var sizeKnown:Bool = false;
+	/** Whether `onError` has already fired for the current `handle`'s error state.. `LibVLC.has_error` doesn't reset on its own. **/
+	var errorSeen:Bool = false;
 
 	/** Whether `LibVLC.global_init` has already been called for this process. **/
 	static var initialized = false;
@@ -140,6 +156,7 @@ class HeapVideo extends h2d.Object {
 		if (path != null) load(path, isUrl);
 		if (handle == null)
 			throw "HeapVideo: play() called with nothing loaded - call load() or pass a path";
+		errorSeen = false; // vlc_play() resets the native errored flag along with starting playback
 		if (!LibVLC.play(handle))
 			throw "HeapVideo: failed to play" + errorSuffix();
 		return this;
@@ -192,6 +209,7 @@ class HeapVideo extends h2d.Object {
 		sizeKnown = false;
 		frameWidth = 0;
 		frameHeight = 0;
+		errorSeen = false;
 	}
 
 	// destroys the object.
@@ -239,6 +257,11 @@ class HeapVideo extends h2d.Object {
 		if (LibVLC.take_playing(handle) && onPlaying != null)
 			onPlaying();
 
+		if (!errorSeen && LibVLC.has_error(handle)) {
+			errorSeen = true;
+			if (onError != null) onError();
+		}
+
 		if (LibVLC.has_ended(handle)) {
 			if (loop) {
 				LibVLC.stop(handle);
@@ -262,5 +285,16 @@ class HeapVideo extends h2d.Object {
 	inline function get_volume() return handle == null ? 100 : LibVLC.get_volume(handle);
 	function set_volume(v:Int) { if (handle != null) LibVLC.set_volume(handle, v); return v; }
 	function set_muted(m:Bool) { if (handle != null) LibVLC.set_mute(handle, m); return muted = m; }
+
+	inline function get_rate() return handle == null ? 1. : LibVLC.get_rate(handle);
+	function set_rate(r:Float) { if (handle != null) LibVLC.set_rate(handle, r); return r; }
+
+	inline function get_audioTrackCount() return handle == null ? 0 : LibVLC.get_audio_track_count(handle);
+	inline function get_audioTrack() return handle == null ? -1 : LibVLC.get_audio_track(handle);
+	function set_audioTrack(t:Int) { if (handle != null) LibVLC.set_audio_track(handle, t); return t; }
+
+	inline function get_subtitleTrackCount() return handle == null ? 0 : LibVLC.get_subtitle_track_count(handle);
+	inline function get_subtitleTrack() return handle == null ? -1 : LibVLC.get_subtitle_track(handle);
+	function set_subtitleTrack(t:Int) { if (handle != null) LibVLC.set_subtitle_track(handle, t); return t; }
 
 }
