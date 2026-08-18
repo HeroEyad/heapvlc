@@ -13,7 +13,7 @@ uploads them into a dynamic Heaps texture, shown via its `bitmap` child. Since l
 own decoding, `play()` accepts anything libVLC supports (mp4, mkv, webm, ...) as well as
 streaming URLs.
 
-Native playback is backed by `native/vlc.c`, compiled into `vlc.hdll` and loaded through
+Native playback is backed by `native/vlc.c`, compiled into `vlc-windows.hdll` (or `vlc-linux.hdll` on Linux) and loaded through
 `heapvlc.LibVLC`'s `@:hlNative` bindings. The vendored libVLC SDK and the diagnostic-log wiring
 both trace back to [MAJigsaw77](https://github.com/MAJigsaw77)'s libVLC/HashLink binding work in
 [hxvlc](https://github.com/MAJigsaw77/hxvlc)
@@ -24,13 +24,13 @@ where.
 
 - Haxe with the [Heaps](https://heaps.io/) library installed.
 - The HashLink (`hl`) target - `heapvlc` only compiles under `-hl`.
-- `vlc.hdll`, built from `native/vlc.c` (see below), staged next to `hl.exe`.
+- `vlc-windows.hdll` (or `vlc-linux.hdll` on Linux), built from `native/vlc.c` (see below), staged next to `hl.exe`.
 - A libVLC 3.x runtime (`libvlc.dll`, `libvlccore.dll`, `plugins/`, and ideally `lua/` for
   resolving video-site URLs like YouTube) staged next to `hl.exe` as well.
 
 ## Building the native extension
 
-`vlc.hdll` isn't prebuilt or vendored - build it locally with the provided script:
+`vlc-windows.hdll` isn't prebuilt or vendored - build it locally with the provided script:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File native/build.ps1 [-BinDir path\to\game\bin]
@@ -41,7 +41,7 @@ a local libVLC 3.x SDK. Headers and import libs are vendored under `native/inclu
 `native/lib`; the runtime DLLs and plugins are not (they're tens of MB), so the script pulls them
 from an existing VLC install, `$env:VLC_SDK_DIR`, or a local `hxvlc` haxelib install.
 
-The script compiles `vlc.hdll` into `native/bin/`, then copies both the `.hdll` and the libVLC
+The script compiles `vlc-windows.hdll` into `native/bin/`, then copies both the `.hdll` and the libVLC
 runtime next to `hl.exe` - HashLink's `.hdll` loader only searches next to `hl.exe`, not the
 working directory, so that's the copy that actually matters for `hl yourgame.hl` to find it.
 Pass `-BinDir` to also copy both into a consuming project's own `bin/`.

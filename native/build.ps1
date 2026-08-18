@@ -1,4 +1,4 @@
-# builds native/vlc.c into <lib>/native/bin/vlc.hdll (the hashlink native ext heapvlc.HeapVLC /
+# builds native/vlc.c into <lib>/native/bin/vlc-windows.hdll (the hashlink native ext heapvlc.HeapVLC /
 # heapvlc.LibVLC call into), then stages the libVLC runtime (libvlc(core).dll + plugins + lua/)
 # next to hl.exe - hashlink's .hdll loader only searches next to hl.exe, not the working dir, so
 # that's the one copy that actually matters for `hl yourgame.hl` to find it. Optionally also
@@ -63,7 +63,7 @@ function Find-VlcRuntime {
 	return $null
 }
 
-# 3. compile vlc.c -> native/bin/vlc.hdll
+# 3. compile vlc.c -> native/bin/vlc-windows.hdll
 $hlInclude = "C:\Hashlink\include"
 $hlLib = "C:\Hashlink"
 $vlcInclude = Join-Path $nativeDir "include"
@@ -73,7 +73,7 @@ if (-not (Test-Path (Join-Path $hlInclude "hl.h"))) {
 	throw "HashLink SDK not found at $hlInclude (expected hl.h). Adjust `$hlInclude in this script."
 }
 
-$outHdll = Join-Path $outDir "vlc.hdll"
+$outHdll = Join-Path $outDir "vlc-windows.hdll"
 $cmd = @"
 call "$vcvarsall" x64 >nul
 cl.exe /nologo /LD /O2 /MD ^

@@ -1,7 +1,7 @@
 package heapvlc;
 
 #if !hl
-#error "heapvlc.LibVLC requires the hl target (see native/build.ps1 to build vlc.hdll)"
+#error "heapvlc.LibVLC requires the hl target (see native/build.ps1 to build vlc-windows.hdll)"
 #end
 
 #if (haxe_ver < 4.0)
@@ -15,7 +15,7 @@ package heapvlc;
 typedef VLCHandle = hl.Abstract<"hl_vlc">;
 
 /**
-	Raw `@:hlNative` bindings to `vlc.hdll` (native/vlc.c), which wraps libVLC (https://wiki.videolan.org/LibVLC). 
+	Raw `@:hlNative` bindings to `vlc-windows.hdll` / `vlc-linux.hdll` (native/vlc.c), which wraps libVLC (https://wiki.videolan.org/LibVLC).
 	The vendored SDK under native/{include,lib} and the ideato surface libVLC's own diagnostic log (see `get_log`) both trace back to MAJigsaw77's work on libVLC/HashLink bindings (https://github.com/MAJigsaw77/hxvlc) - see native/vlc.c for specifics on what came from where.
 **/
 #if windows

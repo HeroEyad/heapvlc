@@ -13,7 +13,7 @@ import heapvlc.LibVLC.VLCHandle;
 
 /**
 	Plays video through libVLC, decoding frames into a dynamic heaps texture shown via `bitmap`.
-	Backed by native/vlc.c (built into `vlc.hdll` by native/build.ps1), which has to exist before use.
+	Backed by native/vlc.c (built into `vlc-windows.hdll` / `vlc-linux.hdll` by native/build.ps1 / native/build.sh), which has to exist before use.
 
 	libVLC does its own decoding, so `play()` takes anything it supports (mp4, mkv, webm, etc.)
 	and also supports URL streaming.
