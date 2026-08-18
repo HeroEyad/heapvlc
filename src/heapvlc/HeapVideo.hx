@@ -103,11 +103,11 @@ class HeapVideo extends h2d.Object {
 	}
 
 	/** Runs libVLC's process-wide `global_init` exactly once, no matter how many players are created. **/
-	static function ensureInit():Void {
+	static function ensureInit(?args:Array<String>):Void {
 		if (initialized) return;
 		initialized = true;
 		// null: libVLC finds its plugins/ folder next to libvlc.dll by itself.
-		LibVLC.global_init(null);
+		LibVLC.global_init(null, args ?? LibVLC.get_default_args());
 	}
 
 	/** Matches a `scheme://` prefix, used by `load()` to auto-detect a URL vs. a local file path. **/
@@ -138,6 +138,7 @@ class HeapVideo extends h2d.Object {
 		@return A null-terminated byte buffer suitable for a C `const char*` parameter.
 	**/
 	static function toCString(s:String):hl.Bytes {
+		if(s == null) return null;
 		var b = haxe.io.Bytes.ofString(s);
 		var out = haxe.io.Bytes.alloc(b.length + 1);
 		out.blit(0, b, 0, b.length);
