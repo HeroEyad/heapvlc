@@ -6,6 +6,8 @@
 
 Video playback for [Heaps](https://heaps.io/) on the HashLink target, via [libVLC](https://wiki.videolan.org/LibVLC).
 
+Currently Supports Windows and Linux (special thanks to [SwordCube](https://github.com/swordcube) on adding [it](https://github.com/HeroEyad/heapvlc/pull/2))
+
 `heapvlc.HeapVideo` is a standalone `h2d.Object` that decodes video frames through libVLC and
 uploads them into a dynamic Heaps texture, shown via its `bitmap` child. Since libVLC does its
 own decoding, `play()` accepts anything libVLC supports (mp4, mkv, webm, ...) as well as
