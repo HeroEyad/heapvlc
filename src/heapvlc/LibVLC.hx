@@ -18,7 +18,11 @@ typedef VLCHandle = hl.Abstract<"hl_vlc">;
 	Raw `@:hlNative` bindings to `vlc.hdll` (native/vlc.c), which wraps libVLC (https://wiki.videolan.org/LibVLC). 
 	The vendored SDK under native/{include,lib} and the ideato surface libVLC's own diagnostic log (see `get_log`) both trace back to MAJigsaw77's work on libVLC/HashLink bindings (https://github.com/MAJigsaw77/hxvlc) - see native/vlc.c for specifics on what came from where.
 **/
-@:hlNative("vlc", "vlc_")
+#if windows
+@:hlNative("vlc-windows", "vlc_")
+#elseif linux
+@:hlNative("vlc-linux", "vlc_")
+#end
 @:build(heapvlc.macro.Checks.run())
 class LibVLC {
 
