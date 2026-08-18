@@ -31,9 +31,11 @@ class LibVLC {
 	public static function get_default_args():Array<String> {
 		final args:Array<String> = [];
 
+		// left over from hxvlc, idk if i should keep this or not
 		#if (android || ios)
 		args.push("--audio-resampler=soxr"); // High-quality audio resampler (default in VLC 4.0)
 		#end
+		
 		args.push("--ignore-config"); // Ignore any existing VLC config files
 		args.push("--drop-late-frames"); // Drop late video frames instead of trying to render them
 		args.push("--intf=none"); // Disable interface / UI
@@ -48,13 +50,20 @@ class LibVLC {
 		args.push("--no-sout-keep"); // Disable streaming output persistence
 		args.push("--no-sub-autodetect-file"); // Don’t automatically load subtitle files
 		args.push("--no-video-title-show"); // Don’t show video title overlay at playback start
+		
+		// left over from hxvlc, idk if i should keep this or not		
 		#if (macos || ios)
 		args.push("--no-videotoolbox"); // Disable VideoToolbox hardware decoding (to make subtitles work)
 		#end
+
 		args.push("--no-volume-save"); // Don’t save last volume level
 		args.push("--no-xlib"); // Disable X11 output (irrelevant on Apple)
 
-		args.push("--quiet"); // Don't print anything to stdout
+		#if HEAPVLC_VERBOSE
+		args.push("--verbose=2"); // Verbose logging in my stdout?!?!?! I Can't Accept It :(
+		#else
+		args.push("--quiet"); // Don't print anything to stdout, shus  h!
+		#end
 		return args;
 	}
 
