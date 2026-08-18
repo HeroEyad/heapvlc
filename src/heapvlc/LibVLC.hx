@@ -25,9 +25,54 @@ typedef VLCHandle = hl.Abstract<"hl_vlc">;
 #end
 @:build(heapvlc.macro.Checks.run())
 class LibVLC {
+	// taken from hxvlc:
+	// https://github.com/MAJigsaw77/hxvlc/blob/main/source/hxvlc/impl/Instance.hx#L58
+	// only thing really changed from this is the removal of the dummy audio output
+	public static function get_default_args():Array<String> {
+		final args:Array<String> = [];
 
-	public static function global_init(pluginsPath:hl.Bytes):Bool {
+		#if (android || ios)
+		args.push("--audio-resampler=soxr"); // High-quality audio resampler (default in VLC 4.0)
+		#end
+		args.push("--ignore-config"); // Ignore any existing VLC config files
+		args.push("--drop-late-frames"); // Drop late video frames instead of trying to render them
+		args.push("--intf=none"); // Disable interface / UI
+		args.push("--vout=vdummy"); // Disable video output (we use vmem)
+		args.push("--text-renderer=freetype"); // Use Freetype for subtitles/text overlays
+		args.push("--no-color"); // Disable colored console output
+		args.push("--no-lua"); // Disable Lua scripting engine
+		args.push("--no-interact"); // Disable interaction prompts
+		args.push("--no-keyboard-events"); // Disable keyboard input
+		args.push("--no-mouse-events"); // Disable mouse events
+		args.push("--no-snapshot-preview"); // Disable snapshot previews
+		args.push("--no-sout-keep"); // Disable streaming output persistence
+		args.push("--no-sub-autodetect-file"); // Don’t automatically load subtitle files
+		args.push("--no-video-title-show"); // Don’t show video title overlay at playback start
+		#if (macos || ios)
+		args.push("--no-videotoolbox"); // Disable VideoToolbox hardware decoding (to make subtitles work)
+		#end
+		args.push("--no-volume-save"); // Don’t save last volume level
+		args.push("--no-xlib"); // Disable X11 output (irrelevant on Apple)
+
+		args.push("--quiet"); // Don't print anything to stdout
+		return args;
+	}
+
+	#if windows
+	@:hlNative("vlc-windows", "vlc_global_init")
+	#elseif linux
+	@:hlNative("vlc-linux", "vlc_global_init")
+	#end
+	static function global_init_native( pluginsPath : hl.Bytes, args : hl.NativeArray<hl.Bytes> ) : Bool {
 		return false;
+	}
+
+	public static function global_init(pluginsPath:String, args:Array<String>):Bool {
+		var nargs = new hl.NativeArray<hl.Bytes>(args.length);
+		for( i in 0...args.length )
+			nargs[i] = @:privateAccess HeapVideo.toCString(args[i]);
+		var pp = @:privateAccess HeapVideo.toCString(pluginsPath);
+		return global_init_native(pp, nargs);
 	}
 
 	public static function global_shutdown():Void {}
