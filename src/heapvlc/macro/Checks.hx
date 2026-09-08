@@ -38,10 +38,10 @@ class Checks {
 		var cls = Context.getLocalClass().get();
 		var modulePath = Context.resolvePath(cls.module.split(".").join("/") + ".hx");
 		var libRoot = Path.directory(Path.directory(Path.directory(modulePath)));
-		var hdll = Path.join([libRoot, "native", "bin", "vlc-" + Sys.systemName().toLowerCase() + ".hdll"]);
+		var hdll = Path.join([libRoot, "native", "bin", "vlc.hdll"]);
 		if (!FileSystem.exists(hdll)) {
 			Context.warning(
-				'heapvlc: native/bin/vlc-${Sys.systemName().toLowerCase()}.hdll not found (expected at $hdll). '
+				'heapvlc: native/bin/vlc.hdll not found (expected at $hdll). '
 				+ 'Run ${Sys.systemName() == "Windows" ? "native/build.ps1" : "native/build.sh"} before running anything that uses HeapVideo/LibVLC, '
 				+ 'or native calls will fail at runtime.',
 				Context.currentPos()

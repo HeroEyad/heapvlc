@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# builds native/vlc.c into <lib>/native/bin/vlc-linux.hdll (the hashlink native ext heapvlc.HeapVLC /
+# builds native/vlc.c into <lib>/native/bin/vlc.hdll (the hashlink native ext heapvlc.HeapVLC /
 # heapvlc.LibVLC call into), then stages the libVLC runtime (libvlc.so/libvlccore.so + plugins)
 # next to hl - hashlink's .hdll loader on Linux resolves via dlopen(), which follows the
 # dynamic linker's normal search path (RPATH/RUNPATH, LD_LIBRARY_PATH, ld.so.conf, then the
@@ -89,10 +89,10 @@ else
 	exit 1
 fi
 
-# 4. compile vlc.c -> native/bin/vlc-linux.hdll
+# 4. compile vlc.c -> native/bin/vlc.hdll
 #    -shared -fPIC builds a .so; hashlink's .hdll on Linux IS just an .so with a different
 #    extension, loaded via dlopen, so no separate "import lib" step like MSVC's /IMPLIB.
-OUT_HDLL="$OUT_DIR/vlc-linux.hdll"
+OUT_HDLL="$OUT_DIR/vlc.hdll"
 
 "$CC" -O2 -fPIC -shared \
 	-I "$HL_INCLUDE" $VLC_CFLAGS \
@@ -179,9 +179,9 @@ stage_vlc_runtime "$OUT_DIR"
 # On Linux there's no "next to hl" requirement the way Windows has "next to hl.exe" - the
 # .hdll (an .so) is found via dlopen's normal search path once it's anywhere on
 # LD_LIBRARY_PATH or a standard lib dir. Most setups just run `hl yourgame.hl` from the
-# directory containing vlc-linux.hdll, which works because '.' ends up searched for hdlls
+# directory containing vlc.hdll, which works because '.' ends up searched for hdlls
 # specifically (unlike Windows where only next-to-exe is searched). If you want it available
-# system-wide, copy vlc-linux.hdll to somewhere on LD_LIBRARY_PATH instead.
+# system-wide, copy vlc.hdll to somewhere on LD_LIBRARY_PATH instead.
 
 # optional: also copy into a consuming project's own bin/ (for packaging a standalone build).
 if [[ -n "$BIN_DIR" ]]; then
