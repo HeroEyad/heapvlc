@@ -92,8 +92,7 @@ class HeapVideo extends h2d.Object {
 	static var initialized = false;
 
 	/**
-		Creates the player and its `bitmap`, optionally attaching it under `parent`. Runs one-time
-		libVLC init if needed.
+		Creates the player and its `bitmap`, optionally attaching it under `parent`. Runs one-time libVLC init if needed.
 		@param parent Optional Heaps object to attach this player under.
 	**/
 	public function new(?parent:h2d.Object) {
@@ -114,8 +113,7 @@ class HeapVideo extends h2d.Object {
 	static var urlScheme = ~/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//;
 
 	/**
-		Stops any current playback and opens `path` (a local file path or a streaming URL) for
-		this player, without starting playback.
+		Stops any current playback and opens `path` (a local file path or a streaming URL) for this player, without starting playback.
 		@param path A local file path or a streaming URL.
 		@param isUrl Whether `path` is a URL. Auto-detected from a `scheme://` prefix when omitted.
 		@return This player, for chaining.
@@ -131,9 +129,8 @@ class HeapVideo extends h2d.Object {
 	}
 
 	/**
-		Converts `s` to a null-terminated byte buffer for passing to libVLC as a C `const char*`.
-		`haxe.io.Bytes.ofString` isn't null-terminated on its own and libVLC would read past the
-		end into garbage without the trailing null this appends.
+		Converts `s` to a null-terminated byte buffer for passing to libVLC as a C `const char*`. 
+		`haxe.io.Bytes.ofString` isn't null-terminated on its own and libVLC would read past the end into garbage without the trailing null this appends.
 		@param s The string to convert.
 		@return A null-terminated byte buffer suitable for a C `const char*` parameter.
 	**/
@@ -164,8 +161,7 @@ class HeapVideo extends h2d.Object {
 	}
 
 	/**
-		Builds a `" (...)"` suffix describing why the last libVLC call failed, for appending to
-		thrown error messages.
+		Builds a `" (...)"` suffix describing why the last libVLC call failed, for appending to thrown error messages.
 		@return A parenthesized error message, a fallback diagnostic log, or `""` if neither is available.
 	**/
 	function errorSuffix():String {
@@ -179,10 +175,8 @@ class HeapVideo extends h2d.Object {
 		return log.length > 0 ? "\n" + log : "";
 	}
 
-	/**
-		Recent libVLC diagnostic log (info/warning/error) since this player's last `load()`/
-		`play()` call - useful when playback silently doesn't progress (wrong URL, unresolved
-		stream, missing codec, ...) without `open()`/`play()` themselves reporting failure.
+	/** Recent libVLC diagnostic log (info/warning/error) since this player's last `load()`/`play()` call. 
+	    Useful when playback silently doesn't progress (wrong URL, unresolved stream, missing codec, etc) without `open()`/`play()` themselves reporting failure.
 		@return The diagnostic log text, or `""` if there's nothing logged.
 	**/
 	public function getLog():String {
@@ -220,9 +214,7 @@ class HeapVideo extends h2d.Object {
 	}
 
 	/**
-		Per-frame update: detects and reacts to a (re)reported decoder frame size, uploads the
-		latest decoded frame to `texture`, and dispatches `onPlaying`/`onEndReached`/loop-restart
-		based on the native player's state.
+		Per-frame update: detects and reacts to a (re)reported decoder frame size, uploads the latest decoded frame to `texture`, and dispatches `onPlaying`/`onEndReached`/loop-restart based on the native player's state.
 		@param ctx The Heaps render context for this frame, forwarded to `super.sync()`.
 	**/
 	override function sync(ctx:h2d.RenderContext):Void {
