@@ -125,8 +125,7 @@ static void hl_vlc_free( hl_vlc *v ) {
 	}
 }
 
-HL_PRIM bool HL_NAME(vlc_global_init)( vbyte *pluginsPath ) {
-	const char *args[] = { "--verbose=2" };
+HL_PRIM bool HL_NAME(vlc_global_init)( vbyte *pluginsPath, varray *args ) {
 	if( g_instance != NULL )
 		return true;
 	if( pluginsPath != NULL ) {
@@ -136,8 +135,19 @@ HL_PRIM bool HL_NAME(vlc_global_init)( vbyte *pluginsPath ) {
 		setenv("VLC_PLUGIN_PATH", (const char*)pluginsPath, 1);
 #endif
 	}
+	int argc = args ? args->size : 0;
+	const char **argv = NULL;
+	if( argc > 0 ) {
+		vbyte **items = hl_aptr(args, vbyte*);
+		argv = (const char**)malloc(sizeof(char*) * argc);
+		for( int i = 0; i < argc; i++ )
+			argv[i] = (const char*)items[i];
+	}
+
 	VLC_LOCK_INIT(&g_logLock);
-	g_instance = libvlc_new(1, args);
+	g_instance = libvlc_new(argc, argv);
+	if( argv != NULL )
+		free(argv);
 	if( g_instance != NULL )
 		libvlc_log_set(g_instance, log_cb, NULL);
 	return g_instance != NULL;
@@ -247,7 +257,7 @@ static void event_cb( const struct libvlc_event_t *evt, void *opaque ) {
 HL_PRIM hl_vlc *HL_NAME(vlc_open)( vbyte *path, bool isUrl ) {
 	hl_vlc *v;
 	libvlc_event_manager_t *events;
-	if( g_instance == NULL && !HL_NAME(vlc_global_init)(NULL) )
+	if( g_instance == NULL && !HL_NAME(vlc_global_init)(NULL, NULL) )
 		return NULL;
 	VLC_LOCK(&g_logLock);
 	g_logLen = 0;
@@ -415,7 +425,7 @@ HL_PRIM void HL_NAME(vlc_close)( hl_vlc *v ) {
 
 #define _VLC _ABSTRACT(hl_vlc)
 
-DEFINE_PRIM(_BOOL, vlc_global_init, _BYTES);
+DEFINE_PRIM(_BOOL, vlc_global_init, _BYTES _ARR);
 DEFINE_PRIM(_VOID, vlc_global_shutdown, _NO_ARG);
 DEFINE_PRIM(_I32, vlc_get_error, _BYTES _I32);
 DEFINE_PRIM(_I32, vlc_get_log, _BYTES _I32);

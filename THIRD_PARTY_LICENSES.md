@@ -6,7 +6,7 @@
 
 Copyright © VideoLAN and VLC authors. The libVLC core library is licensed under the [GNU Lesser General Public License v2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html), or any later version at your option.
 
-`heapvlc` loads these as dynamic libraries. `vlc.hdll` calls into `libvlc.dll` and `libvlccore.dll` at runtime rather than linking them statically. This means end users can replace the DLLs with their own modified or updated builds of libVLC.
+`heapvlc` loads these as dynamic libraries. `vlc-windows.hdll` calls into `libvlc.dll` and `libvlccore.dll` at runtime rather than linking them statically. This means end users can replace the DLLs with their own modified or updated builds of libVLC.
 
 If you redistribute `libvlc.dll` or `libvlccore.dll` with your project, you must:
 

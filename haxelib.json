@@ -4,8 +4,8 @@
 	"license": "MIT",
 	"tags": ["video", "vlc", "libvlc", "heaps", "hashlink"],
 	"description": "A Haxe/Heaps/hashlink library for native video playback using LibVLC",
-	"releasenote": "Add playback rate control, audio/subtitle track selection, and an onError callback to HeapVideo.",
-	"version": "0.2.0",
+	"releasenote": "Removed the OS suffix from hdll filenames, switched to vlc_platform naming instead of vlc-platform, made VLC instance arguments modifiable, plus some other small changes.",
+	"version": "0.3.0",
 	"contributors": ["HeroEyad", "MAJigsaw77"],
 	"classPath": "src",
 	"dependencies": {
