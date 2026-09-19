@@ -65,6 +65,7 @@ typedef struct {
 } hl_vlc;
 
 static libvlc_instance_t *g_instance = NULL;
+static hl_vlc_lock g_initLock;
 
 // Recent libVLC diagnostic log, captured via libvlc_log_set() below. Cleared at the start of
 // each vlc_open() so a failed/silent open (e.g. an unresolvable URL) can be explained by reading
@@ -116,8 +117,10 @@ static void hl_vlc_free( hl_vlc *v ) {
 		v->media = NULL;
 	}
 	if( v->pixels ) {
+		if( v->lockInited ) VLC_LOCK(&v->lock);
 		free(v->pixels);
 		v->pixels = NULL;
+		if( v->lockInited ) VLC_UNLOCK(&v->lock);
 	}
 	if( v->lockInited ) {
 		VLC_LOCK_DESTROY(&v->lock);
@@ -126,8 +129,11 @@ static void hl_vlc_free( hl_vlc *v ) {
 }
 
 HL_PRIM bool HL_NAME(vlc_global_init)( vbyte *pluginsPath, varray *args ) {
-	if( g_instance != NULL )
+	VLC_LOCK(&g_initLock);
+	if( g_instance != NULL ) {
+		VLC_UNLOCK(&g_initLock);
 		return true;
+	}
 	if( pluginsPath != NULL ) {
 #ifdef _WIN32
 		SetEnvironmentVariableA("VLC_PLUGIN_PATH", (const char*)pluginsPath);
@@ -150,6 +156,7 @@ HL_PRIM bool HL_NAME(vlc_global_init)( vbyte *pluginsPath, varray *args ) {
 		free(argv);
 	if( g_instance != NULL )
 		libvlc_log_set(g_instance, log_cb, NULL);
+	VLC_UNLOCK(&g_initLock);
 	return g_instance != NULL;
 }
 
@@ -257,7 +264,7 @@ static void event_cb( const struct libvlc_event_t *evt, void *opaque ) {
 HL_PRIM hl_vlc *HL_NAME(vlc_open)( vbyte *path, bool isUrl ) {
 	hl_vlc *v;
 	libvlc_event_manager_t *events;
-	if( g_instance == NULL && !HL_NAME(vlc_global_init)(NULL, NULL) )
+	if( !HL_NAME(vlc_global_init)(NULL, NULL) )
 		return NULL;
 	VLC_LOCK(&g_logLock);
 	g_logLen = 0;
